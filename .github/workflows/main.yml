@@ -12,6 +12,3 @@ jobs:
     steps:
       - name: Call Workflow
         uses: ./.github/workflows/called-workflow.yml
-        env:
-          VARIABLE1: value1
-          VARIABLE2: ${{ secrets.SECRET_VARIABLE }}
