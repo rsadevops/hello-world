@@ -18,9 +18,6 @@ jobs:
         with:
           node-version: '14'
 
-      - name: Install Dependencies
-        run: npm ci
-
       - name: Update Version and Create Tag
         run: npm version patch
 
