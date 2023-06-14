@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Semantic Versioning
 
 on:
   push:
@@ -6,33 +6,44 @@ on:
       - main
 
 jobs:
-  build-and-push:
+  versioning:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
+      - name: Determine Version
+        id: determine_version
+        run: |
+          # Get the latest tag
+          latest_tag=$(git describe --tags --abbrev=0)
+          
+          # Split the version into major, minor, and patch components
+          major=$(echo $latest_tag | awk -F. '{print $1}')
+          minor=$(echo $latest_tag | awk -F. '{print $2}')
+          patch=$(echo $latest_tag | awk -F. '{print $3}')
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Update Version and Create Tag
-        run: npm version patch
-
-      - name: Retrieve Updated Version
-        id: get-version
-        run: echo "::set-output name=version::$(npm show . version)"
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/my-image:${{ steps.get-version.outputs.version }}
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          # Determine the new version based on the commit messages
+          commit_messages=$(git log $latest_tag..HEAD --pretty=format:"%s")
+          if echo "$commit_messages" | grep -qE '^feat:'; then
+            minor=$((minor + 1))
+            patch=0
+          elif echo "$commit_messages" | grep -qE '^fix:'; then
+            patch=$((patch + 1))
+          else
+            patch=$((patch + 1))
+          fi
+          
+          # Set the new version
+          new_version="$major.$minor.$patch"
+          
+          # Output the new version
+          echo "::set-output name=version::$new_version"
+          
+      - name: Use the Version
+        run: |
+          # Access the version from the previous step
+          version=${{ steps.determine_version.outputs.version }}
+          
+          # Use the version for further actions (e.g., publishing)
+          echo "The new version is $version"
