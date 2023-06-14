@@ -19,7 +19,7 @@ jobs:
       - name: Get latest tag
         id: latest_tag
         run: |
-          echo "::set-env name=TAG::$(git describe --tags --abbrev=0)"
+          echo "::set-env name=TAG::$(git describe --tags --abbrev=0 --always)"
       
       - name: Determine new version
         id: new_version
