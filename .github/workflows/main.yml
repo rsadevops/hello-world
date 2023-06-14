@@ -1,28 +1,28 @@
-# .github/workflows/version.yml
-name: Git Version
-
+# example 1: on push to master
+name: Bump version
 on:
   push:
     branches:
       - main
 
 jobs:
-  lint:
+  update-semver:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}   # checkout the correct branch name
-          fetch-depth: 0                # fetch the whole repo history
-
-      - name: Git Version
+      - uses: actions/checkout@v2
+      - uses: haya14busa/action-update-semver@v1
         id: version
-        uses: codacy/git-version@2.7.1
-      
-      - name: Use the version
-        run: |
-          echo ${{ steps.version.outputs.version }}
-      - name: Use the previous version
-        run: |
-          echo ${{ steps.version.outputs.previous-version }}
+        #with:
+        #  major_version_tag_only: true  # (optional, default is "false")
+  Build:
+    name: Build Image
+    needs: [update-semver]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+    - name: Build image
+      run: |
+        tag_v=$(git describe --tags $(git rev-list --tags --max-count=1))
+        tag=$(echo $tag_v | sed 's/v//')
+        docker build -t my_image_${tag} .
