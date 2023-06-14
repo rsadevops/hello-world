@@ -19,12 +19,12 @@ jobs:
       - name: Get latest tag
         id: latest_tag
         run: |
-          echo "::set-output name=tag::$(git describe --tags --abbrev=0)"
+          echo "::set-env name=TAG::$(git describe --tags --abbrev=0)"
       
       - name: Determine new version
         id: new_version
         run: |
-          latest_tag="${{ steps.latest_tag.outputs.tag }}"
+          latest_tag="${{ env.TAG }}"
           major=$(echo $latest_tag | awk -F. '{print $1}')
           minor=$(echo $latest_tag | awk -F. '{print $2}')
           patch=$(echo $latest_tag | awk -F. '{print $3}')
@@ -40,18 +40,13 @@ jobs:
           fi
           
           new_version="$major.$minor.$patch"
-          echo "::set-output name=version::$new_version"
+          echo "::set-env name=VERSION::$new_version"
         
-      - name: Set outputs
-        id: outputs
-        run: |
-          echo "::set-output name=version::${{ steps.new_version.outputs.version }}"
-          echo "::set-output name=tag::${{ steps.latest_tag.outputs.tag }}"
-          
       - name: Use the new version
         run: |
-          echo "New version: ${{ steps.outputs.outputs.version }}"
-          echo "Latest tag: ${{ steps.outputs.outputs.tag }}"
+          echo "New version: ${{ env.VERSION }}"
+          echo "Latest tag: ${{ env.TAG }}"
           
           # Use the new version for further actions or steps
+
 
