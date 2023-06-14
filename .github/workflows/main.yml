@@ -1,5 +1,4 @@
-# .github/workflows/version.yml
-name: Git Version
+name: Semantic Versioning
 
 on:
   push:
@@ -7,24 +6,22 @@ on:
       - main
 
 jobs:
-  lint:
+  versioning:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Semantic versioning
+        id: semantic_versioning
+        uses: techulus/semantic-git-version@v1
         with:
-          ref: ${{ github.head_ref }}   # checkout the correct branch name
-          fetch-depth: 0                # fetch the whole repo history
+          tag_prefix: 'v'
+          release_branches: 'main'
+          minor_bump_regex: '^feat:'
+          patch_bump_regex: '^fix:'
 
-      - name: Git Version
-        id: version
-        uses: codacy/git-version@2.7.1
-      
-      - name: Use the version
+      - name: Use semantic version
         run: |
-          echo ${{ steps.version.outputs.version }}
-      - name: Use the previous version
-        run: |
-          echo ${{ steps.version.outputs.previous-version }}
-
-
+          echo "Semantic version: ${{ steps.semantic_versioning.outputs.version }}"
