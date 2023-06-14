@@ -1,4 +1,4 @@
-name: Semantic Versioning
+name: Versioning
 
 on:
   push:
@@ -8,23 +8,29 @@ on:
 jobs:
   versioning:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Determine Version
-        id: determine_version
+        
+      - name: Fetch tags
+        run: git fetch --tags
+        
+      - name: Get latest tag
+        id: latest_tag
         run: |
-          # Get the latest tag
           latest_tag=$(git describe --tags --abbrev=0)
-          
-          # Split the version into major, minor, and patch components
+          echo "::set-output name=tag::$latest_tag"
+      
+      - name: Determine new version
+        id: new_version
+        run: |
+          latest_tag=$1
           major=$(echo $latest_tag | awk -F. '{print $1}')
           minor=$(echo $latest_tag | awk -F. '{print $2}')
           patch=$(echo $latest_tag | awk -F. '{print $3}')
-
-          # Determine the new version based on the commit messages
           commit_messages=$(git log $latest_tag..HEAD --pretty=format:"%s")
+          
           if echo "$commit_messages" | grep -qE '^feat:'; then
             minor=$((minor + 1))
             patch=0
@@ -34,16 +40,18 @@ jobs:
             patch=$((patch + 1))
           fi
           
-          # Set the new version
           new_version="$major.$minor.$patch"
-          
-          # Output the new version
           echo "::set-output name=version::$new_version"
-          
-      - name: Use the Version
+        
+      - name: Set outputs
+        id: outputs
         run: |
-          # Access the version from the previous step
-          version=${{ steps.determine_version.outputs.version }}
+          echo "::set-output name=version::${{ steps.new_version.outputs.version }}"
+          echo "::set-output name=tag::${{ steps.latest_tag.outputs.tag }}"
           
-          # Use the version for further actions (e.g., publishing)
-          echo "The new version is $version"
+      - name: Use the new version
+        run: |
+          echo "New version: ${{ steps.outputs.outputs.version }}"
+          echo "Latest tag: ${{ steps.outputs.outputs.tag }}"
+          
+          # Use the new version for further actions or steps
