@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#Set Git user identity
+git config --global user.email "aotogenver@tech.io"
+git config --global user.name "autogenerate version"
+
 commit_message=$(git log --format=%s -n 1)
 
 if echo "$commit_message" | grep -qE '^break:'; then
