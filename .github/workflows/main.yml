@@ -12,6 +12,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        
+      - name: Set Git user identity
+        run: |
+          git config --global user.email "raman.sauchuk@devstream.by"
+          git config --global user.name "rsadevops"
       
       - name: Determine new version
         id: new_version
