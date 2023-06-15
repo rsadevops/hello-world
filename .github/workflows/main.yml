@@ -39,6 +39,7 @@ jobs:
       
       - name: Update package.json
         if: steps.new_version.outputs.version != ''
+        id: update
         run: |
           new_version=${{ steps.new_version.outputs.version }}
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
@@ -48,7 +49,7 @@ jobs:
       
       - name: Use the new version
         run: |
-          new_version=${{ steps.new_version.outputs.new_version }}
+          new_version=${{ steps.update.outputs.new_version }}
           current_version=${{ steps.new_version.outputs.current_version }}
           
           echo "New version: $new_version"
