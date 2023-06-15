@@ -20,12 +20,16 @@ jobs:
       
       - name: Determine new version
         id: new_version
-        run: bash ./scripts/determine_version.sh
+        run: |
+          chmod +x ./scripts/determine_version.sh
+          bash ./scripts/determine_version.sh
       
       - name: Update package.json
         if: steps.new_version.outputs.version != ''
         id: update
-        run: bash ./scripts/update_package.sh ${{ steps.new_version.outputs.version }}
+        run: |
+          chmod +x ./scripts/update_package.sh
+          bash ./scripts/update_package.sh ${{ steps.new_version.outputs.version }}
       
       - name: Use the new version
         run: |
