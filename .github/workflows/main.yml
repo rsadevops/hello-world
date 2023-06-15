@@ -15,8 +15,8 @@ jobs:
       
       - name: Set Git user identity
         run: |
-          git config --global user.email "raman.sauchuk@devstream.by"
-          git config --global user.name "rsadevops"
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
       
       - name: Determine new version
         id: new_version
@@ -26,13 +26,13 @@ jobs:
           if echo "$commit_message" | grep -qE '^feat:'; then
             current_version=$(node -p "require('./package.json').version")
             new_version=$(npm --no-git-tag-version version minor --allow-same-version)
-            echo "::set-output name=version::$new_version"
-            echo "::set-output name=current_version::$current_version"
+            echo "version=$new_version" >> $GITHUB_ENV
+            echo "current_version=$current_version" >> $GITHUB_ENV
           elif echo "$commit_message" | grep -qE '^fix:'; then
             current_version=$(node -p "require('./package.json').version")
             new_version=$(npm --no-git-tag-version version patch --allow-same-version)
-            echo "::set-output name=version::$new_version"
-            echo "::set-output name=current_version::$current_version"
+            echo "version=$new_version" >> $GITHUB_ENV
+            echo "current_version=$current_version" >> $GITHUB_ENV
           else
             echo "No version change needed."
           fi
@@ -40,18 +40,17 @@ jobs:
       - name: Update package.json
         if: steps.new_version.outputs.version != ''
         run: |
-          new_version=${{ steps.new_version.outputs.version }}
-          echo "::set-output name=new_version::$new_version"
+          new_version=${{ env.version }}
+          echo "new_version=$new_version" >> $GITHUB_ENV
           npm --no-git-tag-version version $new_version --allow-same-version
           git add package.json
           git commit -m "Bump version to $new_version"
       
       - name: Use the new version
         run: |
-          new_version=${{ steps.new_version.outputs.new_version }}
-          current_version=${{ steps.new_version.outputs.current_version }}
+          new_version=${{ env.new_version }}
+          current_version=${{ env.current_version }}
           
           echo "New version: $new_version"
           echo "Current version: $current_version"
           # Use the new version for further actions or steps
-
