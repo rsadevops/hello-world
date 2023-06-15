@@ -29,7 +29,5 @@ jobs:
       - name: Use the new version
         run: |
           new_version=${{ steps.tag.outputs.new_version }}
-          current_version=${{ steps.new_version.outputs.current_version }}
           
           echo "New version: $new_version"
-          echo "Current version: $current_version"
