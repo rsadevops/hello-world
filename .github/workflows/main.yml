@@ -38,7 +38,7 @@ jobs:
           fi
       
       - name: Update package.json
-        if: steps.new_version.outputs.version != ''
+      # if: steps.new_version.outputs.version != ''
         id: update
         run: |
           new_version=${{ steps.new_version.outputs.version }}
