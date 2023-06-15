@@ -28,8 +28,8 @@ jobs:
         if: steps.new_version.outputs.version != ''
         id: update
         run: |
-          chmod +x scripts/update_package.sh
-          bash scripts/update_package.sh ${{ steps.new_version.outputs.version }}
+          chmod +x ./scripts/update_package.sh
+          bash ./scripts/update_package.sh ${{ steps.new_version.outputs.version }}
       
       - name: Use the new version
         run: |
