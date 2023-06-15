@@ -21,25 +21,24 @@ jobs:
       - name: Determine new version
         id: new_version
         run: |
-          previous_version=$(node -p "require('./package.json').version")
           commit_message=$(git log --format=%s -n 1)
           
           if echo "$commit_message" | grep -qE '^feat:'; then
-            new_version=$(npx semver --increment minor $previous_version)
+            current_version=$(node -p "require('./package.json').version")
+            new_version=$(npm --no-git-tag-version version minor --allow-same-version)
             echo "::set-output name=version::$new_version"
-            echo "::set-output name=previous_version::$previous_version"
+            echo "::set-output name=current_version::$current_version"
           elif echo "$commit_message" | grep -qE '^fix:'; then
-            new_version=$(npx semver --increment patch $previous_version)
+            current_version=$(node -p "require('./package.json').version")
+            new_version=$(npm --no-git-tag-version version patch --allow-same-version)
             echo "::set-output name=version::$new_version"
-            echo "::set-output name=previous_version::$previous_version"
+            echo "::set-output name=current_version::$current_version"
           else
-            echo "::set-output name=version::$previous_version"
-            echo "::set-output name=previous_version::$previous_version"
             echo "No version change needed."
           fi
       
       - name: Update package.json
-        if: steps.new_version.outputs.version != steps.new_version.outputs.previous_version
+        if: steps.new_version.outputs.version != ''
         run: |
           new_version=${{ steps.new_version.outputs.version }}
           echo "::set-output name=new_version::$new_version"
@@ -49,9 +48,10 @@ jobs:
       
       - name: Use the new version
         run: |
-          new_version=${{ steps.new_version.outputs.version }}
-          previous_version=${{ steps.new_version.outputs.previous_version }}
+          new_version=${{ steps.new_version.outputs.new_version }}
+          current_version=${{ steps.new_version.outputs.current_version }}
           
           echo "New version: $new_version"
-          echo "Previous version: $previous_version"
+          echo "Current version: $current_version"
           # Use the new version for further actions or steps
+
