@@ -1,28 +1,20 @@
-# example 1: on push to master
-name: Bump version
+name: Docker Image CI
+
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  update-semver:
+
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: haya14busa/action-update-semver@v1
-        id: version
-        #with:
-        #  major_version_tag_only: true  # (optional, default is "false")
-  Build:
-    name: Build Image
-    needs: [update-semver]
-    runs-on: ubuntu-latest
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-    - name: Build image
-      run: |
-        tag_v=$(git describe --tags $(git rev-list --tags --max-count=1))
-        tag=$(echo $tag_v | sed 's/v//')
-        docker build -t my_image_${tag} .
+    - uses: actions/checkout@v3
+    - name: Get Tag
+      id: vars
+      run: echo ::set-output name=tag::${git describe --abbrev=0}
+      
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:${{ steps.vars.outputs.tag }}
