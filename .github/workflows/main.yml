@@ -32,12 +32,22 @@ jobs:
             echo "No version change needed."
           fi
       
-      - name: Use the new version
+      - name: Update package.json
+        if: steps.new_version.outputs.version != ''
         run: |
           new_version=${{ steps.new_version.outputs.version }}
+          echo "::set-output name=new_version::$new_version"
+          npm --no-git-tag-version version $new_version --allow-same-version
+          git add package.json
+          git commit -m "Bump version to $new_version"
+      
+      - name: Use the new version
+        run: |
+          new_version=${{ steps.new_version.outputs.new_version }}
           current_version=${{ steps.new_version.outputs.current_version }}
           
           echo "New version: $new_version"
           echo "Current version: $current_version"
           # Use the new version for further actions or steps
+
 
