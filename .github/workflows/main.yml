@@ -47,6 +47,7 @@ jobs:
           cat package.json
           git add package.json
           git commit -m "Bump version to $new_version"
+          git push --quiet
       
       - name: Use the new version
         run: |
