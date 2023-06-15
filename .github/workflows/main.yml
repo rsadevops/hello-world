@@ -56,4 +56,3 @@ jobs:
           
           echo "New version: $new_version"
           echo "Current version: $current_version"
-          # Use the new version for further actions or steps
