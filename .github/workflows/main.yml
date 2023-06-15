@@ -13,33 +13,31 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
-      - name: Install Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      
-      #- name: Install dependencies
-      #  run: npm ci
-      
       - name: Determine new version
         id: new_version
         run: |
           commit_message=$(git log --format=%s -n 1)
           
           if echo "$commit_message" | grep -qE '^feat:'; then
-            npm version minor --no-git-tag-version
+            current_version=$(node -p "require('./package.json').version")
+            new_version=$(npm --no-git-tag-version version minor)
+            echo "::set-output name=version::$new_version"
+            echo "::set-output name=current_version::$current_version"
           elif echo "$commit_message" | grep -qE '^fix:'; then
-            npm version patch --no-git-tag-version
+            current_version=$(node -p "require('./package.json').version")
+            new_version=$(npm --no-git-tag-version version patch)
+            echo "::set-output name=version::$new_version"
+            echo "::set-output name=current_version::$current_version"
           else
-            npm version prerelease --no-git-tag-version --preid=rc
+            echo "No version change needed."
           fi
-      
-      - name: Set outputs
-        id: outputs
-        run: |
-          echo "::set-output name=version::$(node -p "require('./package.json').version")"
       
       - name: Use the new version
         run: |
-          echo "New version: ${{ steps.outputs.outputs.version }}"
+          new_version=${{ steps.new_version.outputs.version }}
+          current_version=${{ steps.new_version.outputs.current_version }}
+          
+          echo "New version: $new_version"
+          echo "Current version: $current_version"
           # Use the new version for further actions or steps
+
