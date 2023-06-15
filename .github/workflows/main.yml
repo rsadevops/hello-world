@@ -41,8 +41,6 @@ jobs:
         if: steps.new_version.outputs.version != ''
         id: update
         run: |
-          pwd
-          ls -l
           new_version=${{ steps.new_version.outputs.version }}
           echo "new_version=$new_version" >> $GITHUB_OUTPUT
           npm --no-git-tag-version version $new_version --allow-same-version
