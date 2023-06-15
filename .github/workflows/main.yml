@@ -11,7 +11,7 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       
       - name: Set Git user identity
         run: |
@@ -26,13 +26,13 @@ jobs:
           if echo "$commit_message" | grep -qE '^feat:'; then
             current_version=$(node -p "require('./package.json').version")
             new_version=$(npm --no-git-tag-version version minor --allow-same-version)
-            echo "version=$new_version" >> $GITHUB_ENV
-            echo "current_version=$current_version" >> $GITHUB_ENV
+            echo "version=$new_version" >> $GITHUB_OUTPUT
+            echo "current_version=$current_version" >> $GITHUB_OUTPUT
           elif echo "$commit_message" | grep -qE '^fix:'; then
             current_version=$(node -p "require('./package.json').version")
             new_version=$(npm --no-git-tag-version version patch --allow-same-version)
-            echo "version=$new_version" >> $GITHUB_ENV
-            echo "current_version=$current_version" >> $GITHUB_ENV
+            echo "version=$new_version" >> $GITHUB_OUTPUT
+            echo "current_version=$current_version" >> $GITHUB_OUTPUT
           else
             echo "No version change needed."
           fi
@@ -40,16 +40,16 @@ jobs:
       - name: Update package.json
         if: steps.new_version.outputs.version != ''
         run: |
-          new_version=${{ env.version }}
-          echo "new_version=$new_version" >> $GITHUB_ENV
+          new_version=${{ steps.new_version.outputs.version }}
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
           npm --no-git-tag-version version $new_version --allow-same-version
           git add package.json
           git commit -m "Bump version to $new_version"
       
       - name: Use the new version
         run: |
-          new_version=${{ env.new_version }}
-          current_version=${{ env.current_version }}
+          new_version=${{ steps.new_version.outputs.new_version }}
+          current_version=${{ steps.new_version.outputs.current_version }}
           
           echo "New version: $new_version"
           echo "Current version: $current_version"
