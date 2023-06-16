@@ -18,7 +18,7 @@ elif echo "$commit_message" | grep -qE '^fix:'; then
   new_version=$(npm --no-git-tag-version version patch --allow-same-version)
 
 else
-  echo "No version change needed."
+  new_version=$(node -p "require('./package.json').version")
 fi
 
 #Update package.json
