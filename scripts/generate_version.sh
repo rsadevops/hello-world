@@ -8,17 +8,19 @@ git config --global user.name "autogenerate version"
 #Determine version
 commit_message=$(git log --format=%s -n 1)
 
-if echo "$commit_message" | grep -qE '^break:'; then
+if echo "$commit_message" | grep -qE '^major:'; then
   new_version=$(npm --no-git-tag-version version major --allow-same-version)
 
-elif echo "$commit_message" | grep -qE '^feat:'; then
+elif echo "$commit_message" | grep -qE '^minor:'; then
   new_version=$(npm --no-git-tag-version version minor --allow-same-version)
 
-elif echo "$commit_message" | grep -qE '^fix:'; then
+elif echo "$commit_message" | grep -qE '^patch:'; then
   new_version=$(npm --no-git-tag-version version patch --allow-same-version)
 
-else
+elif echo "$commit_message" | grep -qE '^manual:'; then
   new_version=$(node -p "require('./package.json').version")
+else
+  new_version=$(npm --no-git-tag-version version prerelease --allow-same-version)
 fi
 
 #Update package.json
