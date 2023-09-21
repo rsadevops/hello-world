@@ -1,33 +1,47 @@
 name: Semantic Versioning
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
-  versioning:
+  create-build:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-            
-      - name: Determine new version
-        id: new_version
-        run: |
-          chmod +x ./scripts/determine_version.sh 
-          bash ./scripts/determine_version.sh
       
-      - name: Update package.json
-        if: steps.new_version.outputs.version != ''
-        id: tag
-        run: |
-          chmod +x ./scripts/Update_package.sh
-          bash ./scripts/Update_package.sh ${{ steps.new_version.outputs.version }}
+      - name: Setup Node.js environment 
+        uses: actions/setup-node@v3
+        with:
+          node-version: latest
+          cache-dependency-path: src/ReactClient
+          cache: 'npm'
       
-      - name: Use the new version
+      - name: Build
         run: |
-          new_version=${{ steps.tag.outputs.new_version }}
-          
-          echo "New version: $new_version"
+          cd src/ReactClient
+          npm ci
+          npm run build --if-present 
+      
+      - name: Upload apk as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.artifact-path }}
+          retention-days: 1
+  job-upload-acrtifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: Dowmload build as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: src/ReactClient/build
+          retention-days: 1
+
+      - name: check
+        run: |
+          ls 
