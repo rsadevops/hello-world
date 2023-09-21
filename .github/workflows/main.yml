@@ -30,6 +30,7 @@ jobs:
           path: ${{ inputs.artifact-path }}
           retention-days: 1
   job-upload-acrtifact:
+    needs: [create-build]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
